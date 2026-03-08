@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLEAN SYNC | 継続デバッグ</title>
+    <title>CLEAN SYNC | 統合デバッグ</title>
     <style>
         :root {
             --bg: #0d1117; --primary: #58a6ff; --accent: #ff66b2;
@@ -12,164 +12,129 @@
         body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 500px; width: 100%; }
         
-        /* ステータスセクション */
-        .status-card { border: 2px solid var(--primary); padding: 20px; margin-bottom: 20px; border-radius: 12px; background: rgba(22, 27, 34, 0.9); box-shadow: 0 0 20px rgba(88,166,255,0.2); }
-        .mote-header { display: flex; justify-content: space-between; align-items: baseline; }
-        .rank-badge { font-size: 2rem; font-weight: 900; color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-        .streak-counter { font-size: 0.9rem; color: #fff; background: var(--danger); padding: 2px 10px; border-radius: 20px; }
-        
-        .gauge-container { width: 100%; height: 12px; background: #30363d; border-radius: 6px; margin: 15px 0; overflow: hidden; }
-        .gauge-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 1s ease-out; }
+        /* ステータス */
+        .status-card { border: 2px solid var(--primary); padding: 15px; margin-bottom: 20px; border-radius: 12px; background: rgba(22, 27, 34, 0.9); }
+        .rank-badge { font-size: 2rem; font-weight: 900; color: var(--accent); }
+        .gauge-container { width: 100%; height: 10px; background: #30363d; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        .gauge-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: 1s; }
 
-        /* クエストセクション */
-        .quest-item { background: #161b22; border: 1px solid #30363d; padding: 15px; margin-bottom: 12px; border-radius: 10px; position: relative; overflow: hidden; }
-        .quest-title { font-weight: bold; color: #fff; display: block; }
-        .quest-desc { font-size: 0.75rem; color: #8b949e; margin: 4px 0; }
+        /* ミッション切り替え */
+        h2 { font-size: 0.9rem; color: #8b949e; border-bottom: 1px solid #30363d; padding-bottom: 5px; margin-top: 25px; }
         
-        .debug-btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 8px; }
-        .debug-btn:disabled { background: #30363d; color: #8b949e; cursor: not-allowed; }
+        .quest-item { background: #161b22; border: 1px solid #30363d; padding: 12px; margin-bottom: 10px; border-radius: 8px; }
+        .quest-header { display: flex; justify-content: space-between; align-items: center; }
+        .quest-title { font-weight: bold; font-size: 0.95rem; color: #fff; }
+        .reward { font-size: 0.75rem; color: var(--accent); }
         
-        .cooldown-text { font-size: 0.7rem; color: var(--warning); text-align: center; display: block; margin-top: 5px; }
-
-        /* アニメーション */
-        .glitch { animation: glitch-anim 0.3s linear; }
-        @keyframes glitch-anim { 0% { opacity: 0.5; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+        .debug-btn { background: var(--success); color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 8px; font-size: 0.85rem; }
+        .debug-btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+        
+        .cooldown { font-size: 0.7rem; color: var(--warning); display: block; text-align: center; margin-top: 4px; }
+        
+        .monthly { border-left: 4px solid var(--warning); }
+        .daily { border-left: 4px solid var(--success); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: var(--accent); margin: 0;">CLEAN SYNC</h1>
-        <div id="last-sync" style="font-size: 0.7rem; color: #8b949e;">LAST SYNC: ---</div>
+    <header style="text-align: center;">
+        <h1 style="color: var(--accent); margin-bottom: 5px;">CLEAN SYNC</h1>
+        <div id="streak-info" style="font-size: 0.8rem;">🔥 CONTINUOUS: <span id="streak-days">0</span> DAYS</div>
     </header>
 
-    <div class="status-card" id="status-display">
-        <div class="mote-header">
+    <div class="status-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
             <span id="rank-name" class="rank-badge">RANK E</span>
-            <span class="streak-counter">🔥 <span id="streak-days">0</span> DAYS STREAK</span>
+            <div style="text-align: right;">
+                <div style="font-size: 0.75rem;">MOTE_LEVEL</div>
+                <div id="score-val" style="font-size: 1.2rem; font-weight: bold;">0%</div>
+            </div>
         </div>
         <div class="gauge-container"><div id="mote-bar" class="gauge-fill"></div></div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-            <span>CLEAN_LEVEL: <span id="mote-val">0</span>%</span>
-            <span id="mote-status">UNSTABLE</span>
+    </div>
+
+    <!-- DAILY -->
+    <h2>⚡ DAILY MISSIONS (ついで掃除)</h2>
+    <div id="daily-list">
+        <div class="quest-item daily">
+            <div class="quest-header"><span class="quest-title">🛁 ラスト・シャワー</span><span class="reward">+5 EXP</span></div>
+            <p style="font-size: 0.7rem; margin: 5px 0;">冷水で浴室の温度を下げ、カビのスポーンを抑制せよ。</p>
+            <button class="debug-btn" id="btn-daily-bath" onclick="doQuest('daily-bath', 5, 24)">デバッグ実行</button>
+            <span id="time-daily-bath" class="cooldown"></span>
+        </div>
+        <div class="quest-item daily">
+            <div class="quest-header"><span class="quest-title">🚽 着座ついで拭き</span><span class="reward">+5 EXP</span></div>
+            <p style="font-size: 0.7rem; margin: 5px 0;">シート1枚でフチを1周。汚れの固着バグを防ぐ。</p>
+            <button class="debug-btn" id="btn-daily-toilet" onclick="doQuest('daily-toilet', 5, 24)">デバッグ実行</button>
+            <span id="time-daily-toilet" class="cooldown"></span>
         </div>
     </div>
 
-    <div id="quest-list">
-        <!-- JSで動的に生成、または静的に配置 -->
-        <div class="quest-item">
-            <span class="quest-title">💧 排水口：ヌメリ・デーモン</span>
-            <span class="quest-desc">24時間周期のデイリーミッション。物理洗浄で完了。</span>
-            <button class="debug-btn" id="btn-drain" onclick="completeQuest('drain', 25)">デバッグ実行 (+25)</button>
-            <span id="time-drain" class="cooldown-text"></span>
+    <!-- MONTHLY -->
+    <h2>🏆 MONTHLY BOSS (しっかりデバッグ)</h2>
+    <div id="monthly-list">
+        <div class="quest-item monthly">
+            <div class="quest-header"><span class="quest-title">🔥 60度バースト：排水口</span><span class="reward">+30 EXP</span></div>
+            <p style="font-size: 0.7rem; margin: 5px 0;">筒を外しヘドロを抹消。チョウバエ母体を完全沈黙。</p>
+            <button class="debug-btn" id="btn-mon-drain" onclick="doQuest('mon-drain', 30, 672)">ボス討伐 (月1)</button>
+            <span id="time-mon-drain" class="cooldown"></span>
         </div>
-
-        <div class="quest-item">
-            <span class="quest-title">🚽 トイレ：聖域化プロトコル</span>
-            <span class="quest-desc">便器のフチ裏をデバッグせよ。</span>
-            <button class="debug-btn" id="btn-toilet" onclick="completeQuest('toilet', 15)">デバッグ実行 (+15)</button>
-            <span id="time-toilet" class="cooldown-text"></span>
-        </div>
-
-        <div class="quest-item">
-            <span class="quest-title">📦 玄関：バッファ・オーバーフロー</span>
-            <span class="quest-desc">不要な段ボールと靴の整理。</span>
-            <button class="debug-btn" id="btn-entrance" onclick="completeQuest('entrance', 10)">デバッグ実行 (+10)</button>
-            <span id="time-entrance" class="cooldown-text"></span>
+        <div class="quest-item monthly">
+            <div class="quest-header"><span class="quest-title">🖼️ 窓際：黒カミスライム浄化</span><span class="reward">+20 EXP</span></div>
+            <p style="font-size: 0.7rem; margin: 5px 0;">サッシの溝を徹底洗浄。視界の解像度を上げよ。</p>
+            <button class="debug-btn" id="btn-mon-window" onclick="doQuest('mon-window', 20, 672)">ボス討伐 (月1)</button>
+            <span id="time-mon-window" class="cooldown"></span>
         </div>
     </div>
 </div>
 
 <script>
-    // データ初期化
-    let state = JSON.parse(localStorage.getItem('cleanSyncState')) || {
-        score: 0,
-        streak: 0,
-        lastDate: null,
-        coolDowns: {}
-    };
+    let state = JSON.parse(localStorage.getItem('cs_v4')) || { score: 0, streak: 0, lastDate: null, cooldowns: {} };
 
-    function save() { localStorage.setItem('cleanSyncState', JSON.stringify(state)); }
-
-    function update() {
-        const now = new Date();
-        const today = now.toDateString();
-
-        // 1. 放置による減衰計算 (12時間で1%減少)
-        if (state.lastDate) {
-            const last = new Date(state.lastDate);
-            const diffHours = (now - last) / (1000 * 60 * 60);
-            if (diffHours > 12) {
-                state.score = Math.max(0, state.score - Math.floor(diffHours / 12));
-            }
-            
-            // 2. 継続日数の判定 (48時間以上空いたらリセット)
-            if (diffHours > 48) state.streak = 0;
-        }
-
-        render();
-    }
-
-    function completeQuest(id, points) {
+    function doQuest(id, points, hours) {
         const now = Date.now();
-        const cooldownMs = 24 * 60 * 60 * 1000; // 24時間
-
-        if (state.coolDowns[id] && (now - state.coolDowns[id] < cooldownMs)) return;
-
-        // スコア加算
         state.score = Math.min(100, state.score + points);
+        state.cooldowns[id] = now + (hours * 60 * 60 * 1000);
         
-        // 継続日数の更新
         const today = new Date().toDateString();
-        if (state.lastDate !== today) {
-            state.streak++;
-            state.lastDate = today;
-        }
-
-        state.coolDowns[id] = now;
+        if(state.lastDate !== today) { state.streak++; state.lastDate = today; }
         
-        document.getElementById('status-display').classList.add('glitch');
-        setTimeout(() => document.getElementById('status-display').classList.remove('glitch'), 300);
-        
-        save();
+        localStorage.setItem('cs_v4', JSON.stringify(state));
         render();
+        alert(`Mission Complete! \nモテ度が ${points} 上がった！`);
     }
 
     function render() {
         const now = Date.now();
         document.getElementById('mote-bar').style.width = state.score + '%';
-        document.getElementById('mote-val').innerText = state.score;
+        document.getElementById('score-val').innerText = state.score + '%';
         document.getElementById('streak-days').innerText = state.streak;
-        document.getElementById('last-sync').innerText = "LAST_UPDATE: " + (state.lastDate || "NONE");
 
-        // ランク表示
-        const rank = document.getElementById('rank-name');
-        const status = document.getElementById('mote-status');
-        if(state.score < 20) { rank.innerText = "RANK E"; status.innerText = "DIRTY SE"; }
-        else if(state.score < 50) { rank.innerText = "RANK C"; status.innerText = "NORMAL"; }
-        else if(state.score < 80) { rank.innerText = "RANK A"; status.innerText = "CLEANER"; }
-        else { rank.innerText = "RANK S"; status.innerText = "HYPER MODS"; }
+        // Rank
+        const r = document.getElementById('rank-name');
+        if(state.score < 30) r.innerText = "RANK E";
+        else if(state.score < 70) r.innerText = "RANK B";
+        else r.innerText = "RANK S";
 
-        // ボタンのクールダウン表示
-        ['drain', 'toilet', 'entrance'].forEach(id => {
+        // Buttons
+        Object.keys(state.cooldowns).forEach(id => {
             const btn = document.getElementById('btn-' + id);
             const timeSpan = document.getElementById('time-' + id);
-            const last = state.coolDowns[id];
-            
-            if (last && (now - last < 24 * 60 * 60 * 1000)) {
+            if(!btn) return;
+            const diff = state.cooldowns[id] - now;
+            if(diff > 0) {
                 btn.disabled = true;
-                const remain = 24 - Math.floor((now - last) / (1000 * 60 * 60));
-                timeSpan.innerText = `NEXT DEBUG: ${remain}h`;
+                const h = Math.ceil(diff / (1000 * 60 * 60));
+                timeSpan.innerText = `READY IN: ${h}h`;
             } else {
                 btn.disabled = false;
-                timeSpan.innerText = "READY TO DEBUG";
+                timeSpan.innerText = "READY";
             }
         });
     }
-
-    setInterval(update, 1000 * 60); // 1分ごとに自動更新
-    update();
+    render();
+    setInterval(render, 1000 * 60);
 </script>
 </body>
 </html>
