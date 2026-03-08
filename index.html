@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLEAN SYNC | ライフ・デバッグ</title>
+    <style>
+        :root {
+            --bg: #0d1117; --primary: #58a6ff; --accent: #ff66b2;
+            --success: #238636; --warning: #d29922; --danger: #da3633;
+        }
+        body { background: var(--bg); color: var(--primary); font-family: 'Segoe UI', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; }
+        .status-card { border: 2px solid var(--primary); padding: 15px; margin-bottom: 20px; border-radius: 8px; background: rgba(22, 27, 34, 0.8); position: sticky; top: 10px; z-index: 100; }
+        h1 { font-size: 1.8rem; text-align: center; color: var(--accent); margin: 0; }
+        .gauge-container { width: 100%; height: 15px; background: #30363d; border-radius: 8px; overflow: hidden; margin: 10px 0; border: 1px solid #484f58; }
+        .gauge-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 1s; }
+        
+        .quest-section { margin-top: 20px; }
+        h2 { font-size: 1rem; border-left: 4px solid var(--accent); padding-left: 10px; color: #fff; }
+        .quest-list { list-style: none; padding: 0; }
+        .quest-item { background: #161b22; border: 1px solid #30363d; padding: 15px; margin-bottom: 12px; border-radius: 12px; display: flex; flex-direction: column; }
+        .quest-info { display: flex; justify-content: space-between; align-items: flex-start; }
+        .quest-title { font-weight: bold; color: #f0f6fc; font-size: 1.1rem; }
+        .quest-desc { font-size: 0.8rem; color: #8b949e; margin: 5px 0; }
+        .reward-badge { background: rgba(88, 166, 255, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid var(--primary); }
+
+        .debug-btn { background: var(--success); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; transition: 0.2s; }
+        .debug-btn:hover { background: #2ea043; filter: brightness(1.2); }
+        .debug-btn:active { transform: scale(0.95); }
+
+        .glitch { animation: glitch-anim 0.3s; }
+        @keyframes glitch-anim { 0% { opacity: 1; } 50% { opacity: 0.5; transform: skewX(10deg); } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>[ CLEAN SYNC v2.0 ]</h1>
+    
+    <div class="status-card" id="status-main">
+        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+            <span id="rank-display">RANK: E</span>
+            <span id="mote-val">0%</span>
+        </div>
+        <div class="gauge-container"><div id="mote-bar" class="gauge-fill"></div></div>
+        <div style="text-align: center; font-size: 0.9rem;">
+            モテ・ステータス: <span id="mote-status" style="color: var(--accent);">バグ過多</span>
+        </div>
+    </div>
+
+    <!-- 水回りエリア -->
+    <div class="quest-section">
+        <h2>💧 WATER AREA (水回り)</h2>
+        <ul class="quest-list">
+            <li class="quest-item">
+                <div class="quest-info">
+                    <div>
+                        <span class="quest-title">排水口：ヌメリ・デーモン</span>
+                        <p class="quest-desc">筒を外して裏のヘドロを抹消せよ。チョウバエの母体を断つ。</p>
+                    </div>
+                    <span class="reward-badge">+20 MOTE</span>
+                </div>
+                <button class="debug-btn" onclick="executeDebug(20, '排水口を完全浄化！チョウバエのスポーン地点を破壊しました。')">デバッグ実行</button>
+            </li>
+            <li class="quest-item">
+                <div class="quest-info">
+                    <div>
+                        <span class="quest-title">トイレ：アンモニア・ファントム</span>
+                        <p class="quest-desc">フチ裏の黄ばみを撃破。異臭バグを修正せよ。</p>
+                    </div>
+                    <span class="reward-badge">+15 MOTE</span>
+                </div>
+                <button class="debug-btn" onclick="executeDebug(15, 'トイレの聖域化に成功。モテの基本スキルを習得！')">デバッグ実行</button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 居住エリア -->
+    <div class="quest-section">
+        <h2>🏠 LIVING AREA (居住空間)</h2>
+        <ul class="quest-list">
+            <li class="quest-item">
+                <div class="quest-info">
+                    <div>
+                        <span class="quest-title">窓際：黒カビ・スライム</span>
+                        <p class="quest-desc">サッシの黒ずみを浄化。空気のパケットロスを防げ。</p>
+                    </div>
+                    <span class="reward-badge">+10 MOTE</span>
+                </div>
+                <button class="debug-btn" onclick="executeDebug(10, '窓の視認性が向上。メンタルの解像度が上がりました。')">デバッグ実行</button>
+            </li>
+            <li class="quest-item">
+                <div class="quest-info">
+                    <div>
+                        <span class="quest-title">玄関：カオス・ストレージ</span>
+                        <p class="quest-desc">靴を揃え、段ボールを破棄。運気の入り口を最適化。</p>
+                    </div>
+                    <span class="reward-badge">+15 MOTE</span>
+                </div>
+                <button class="debug-btn" onclick="executeDebug(15, '玄関のメモリを解放。素敵なゲストを呼び込む準備完了！')">デバッグ実行</button>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    let score = parseInt(localStorage.getItem('syncScore')) || 0;
+
+    function executeDebug(p, msg) {
+        document.getElementById('status-main').classList.add('glitch');
+        setTimeout(() => document.getElementById('status-main').classList.remove('glitch'), 300);
+        
+        score = Math.min(score + p, 100);
+        localStorage.setItem('syncScore', score);
+        alert(msg);
+        render();
+    }
+
+    function render() {
+        const bar = document.getElementById('mote-bar');
+        const val = document.getElementById('mote-val');
+        const status = document.getElementById('mote-status');
+        const rank = document.getElementById('rank-display');
+
+        bar.style.width = score + '%';
+        val.innerText = score + '%';
+
+        if (score < 25) { status.innerText = "バグ過多"; rank.innerText = "RANK: E"; }
+        else if (score < 50) { status.innerText = "平均的SE"; rank.innerText = "RANK: C"; }
+        else if (score < 75) { status.innerText = "清潔感エリート"; rank.innerText = "RANK: B"; }
+        else if (score < 100) { status.innerText = "モテ・エンジニア"; rank.innerText = "RANK: A"; }
+        else { status.innerText = "✨ 清潔神(GOD) ✨"; rank.innerText = "RANK: S"; }
+    }
+    render();
+</script>
+</body>
+</html>
